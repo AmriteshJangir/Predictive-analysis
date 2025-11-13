@@ -1,0 +1,30 @@
+Project Task: Predictive Analysis — Supply Chain & Demand Forecasting
+
+Objective:
+Build and demonstrate a predictive analytics pipeline that forecasts future demand (Sales)
+using historical data and machine learning models. The focus is on data modelling, handling,
+manipulation, training, evaluation, and producing a reproducible deliverable.
+
+Requirements:
+1. Use the provided sample dataset (data/trend_data.csv) or replace it with real data.
+2. Preprocess data: handle missing values, encode categorical features, and scale numerical features.
+3. Train at least three models: Linear Regression, Random Forest, and XGBoost (optional if available).
+4. Evaluate models using MAE, RMSE, and R². Save the trained Random Forest model and scaler to models/.
+5. Provide a CLI entrypoint (src/predictive_analysis.py) to train (--train) and predict (--predict --input).
+6. Include instructions in README.md for setup, training, and prediction.
+7. Optional: include visualizations, feature importance, and a short analysis of results.
+
+Deliverables in this repository:
+- data/trend_data.csv : sample synthetic dataset (monthly)
+- src/predictive_analysis.py : main script for training and prediction
+- models/ : directory where saved models will be stored after training
+- README.md : project description and quickstart
+- requirements.txt : dependencies
+- TASK.txt : this task description
+
+Notes:
+- Run `python src/predictive_analysis.py --train` to train and create models/.
+- Run `python src/predictive_analysis.py --predict --input '{"Marketing_Spend":50000,"Economic_Index":98.7,"Season_Summer":1,"Season_Winter":0}'` to get a sample prediction.
+- The project is licensed under the MIT License (see LICENSE if included).
+
+Generated on: 2025-11-13
