@@ -1,0 +1,103 @@
+# ===============================================
+# Predictive Analysis: Future Trend Forecasting
+# Using Random Forest and Multiple ML Models
+# ===============================================
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from xgboost import XGBRegressor
+
+# -----------------------------------------------
+# 1. Data Loading (Example: time-based trend data)
+# -----------------------------------------------
+# Replace this with your actual dataset
+# Example structure: ['Month', 'Sales', 'Marketing_Spend', 'Economic_Index', 'Season']
+data = pd.read_csv("trend_data.csv")
+
+# Display first few rows
+print("Sample Data:")
+print(data.head())
+
+# -----------------------------------------------
+# 2. Data Preprocessing
+# -----------------------------------------------
+# Convert categorical columns if any
+data = pd.get_dummies(data, drop_first=True)
+
+# Define features and target
+X = data.drop(['Sales'], axis=1)
+y = data['Sales']
+
+# Split into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scale numerical features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# -----------------------------------------------
+# 3. Model Training and Prediction
+# -----------------------------------------------
+
+# Initialize models
+models = {
+    "Linear Regression": LinearRegression(),
+    "Random Forest": RandomForestRegressor(n_estimators=200, random_state=42),
+    "XGBoost": XGBRegressor(n_estimators=200, learning_rate=0.1, random_state=42)
+}
+
+# Train and evaluate each model
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    mae = mean_absolute_error(y_test, preds)
+    rmse = np.sqrt(mean_squared_error(y_test, preds))
+    r2 = r2_score(y_test, preds)
+    print(f"\nModel: {name}")
+    print(f"Mean Absolute Error: {mae:.2f}")
+    print(f"Root Mean Squared Error: {rmse:.2f}")
+    print(f"R² Score: {r2:.3f}")
+
+# -----------------------------------------------
+# 4. Predict Future Trends
+# -----------------------------------------------
+# Example: Predict next month’s trend using Random Forest
+future_data = pd.DataFrame({
+    'Marketing_Spend': [50000],
+    'Economic_Index': [98.7],
+    'Season_Winter': [0],
+    'Season_Summer': [1]
+})
+
+# Preprocess and scale future data
+future_scaled = scaler.transform(future_data)
+rf_model = models['Random Forest']
+future_prediction = rf_model.predict(future_scaled)
+
+print("\nPredicted Future Sales/Trend (Next Period):", round(future_prediction[0], 2))
+
+# -----------------------------------------------
+# 5. Feature Importance (for insights)
+# -----------------------------------------------
+feature_importance = pd.Series(rf_model.feature_importances_, index=X.columns)
+feature_importance = feature_importance.sort_values(ascending=False)
+
+print("\nTop Predictive Features:")
+print(feature_importance)
+
+# Optional: Plot feature importance
+import matplotlib.pyplot as plt
+plt.figure(figsize=(8,5))
+feature_importance.head(10).plot(kind='bar')
+plt.title("Top Feature Importances - Random Forest")
+plt.xlabel("Features")
+plt.ylabel("Importance Score")
+plt.tight_layout()
+plt.show()
