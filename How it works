@@ -1,0 +1,15 @@
+Loads and preprocesses data — including encoding categorical variables.
+
+Trains multiple models:
+
+linear Regression (baseline)
+
+Random Forest Regressor
+
+XGBoost Regressor
+
+Evaluates models using MAE, RMSE, and R² metrics.
+
+Predicts future demand/trend based on new input conditions.
+
+Displays feature importance to explain which factors most influence the forecast.
