@@ -1,9 +1,10 @@
 # Predictive-analysis
 Data Modelling , handling and the manipulation
 
-Predictive Analysis — Data Modelling, Handling, and Manipulation
+Predictive Analysis — Data Modelling, Handling, and Manipulation od the driven data.
+
 Definition
-Predictive analysis involves using statistical techniques, data mining, and machine learning models to analyze current and historical data in order to make predictions about future outcomes. This phase focuses on preparing, transforming, and modeling data to extract meaningful patterns and insights that support data-driven decision-making.
+Predictive analysis using statistical techniques, data mining, and machine learning models to analyze current and historical data in order to make predictions about future outcomes. This phase focuses on preparing, transforming, and modeling data to extract meaningful patterns and insights that support data-driven decision-making.
 
 Key Components
 Data Handling and Manipulation
