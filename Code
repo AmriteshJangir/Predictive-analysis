@@ -1,103 +1,350 @@
-# ===============================================
-# Predictive Analysis: Future Trend Forecasting
-# Using Random Forest and Multiple ML Models
-# ===============================================
-
-# Import necessary libraries
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from xgboost import XGBRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
 
-# -----------------------------------------------
-# 1. Data Loading (Example: time-based trend data)
-# -----------------------------------------------
-# Replace this with your actual dataset
-# Example structure: ['Month', 'Sales', 'Marketing_Spend', 'Economic_Index', 'Season']
-data = pd.read_csv("trend_data.csv")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Display first few rows
-print("Sample Data:")
-print(data.head())
+# Set a style for aesthetic purposes
+plt.style.use('seaborn-v0_8-darkgrid')
 
-# -----------------------------------------------
-# 2. Data Preprocessing
-# -----------------------------------------------
-# Convert categorical columns if any
-data = pd.get_dummies(data, drop_first=True)
+# --- DATA LOADING AND CLEANING (KEPT SAME) ---
+# NOTE: This line requires the file "AI Adoption Readiness1.csv" to be present
+data = pd.read_csv("AI Adoption Readiness1.csv")
 
-# Define features and target
-X = data.drop(['Sales'], axis=1)
-y = data['Sales']
+data.columns = data.columns.str.strip()
+data = data.rename(columns={
+    "Timestamp": "timestamp",
+    'Full Name': "name",
+    'Age': "age",
+    'Gender': "gender",
+    'Education Level': "education",
+    "Field of Study or Work": "field",
+    "How often do you use technology in daily tasks?": "tech_usage",
+    "Have you ever heard about Artificial Intelligence (AI)?": "heard_ai",
+    "How would you rate your understanding of AI concepts?": "ai_understanding",
+    "Have you used any AI tools (e.g., ChatGPT, Copilot, Gemini, etc.)?": "used_ai_tools",
+    "If yes, which AI tools do you use most?": "ai_tools_most_used",
+    "How often do you use AI tools?": "ai_usage_freq",
+    "What do you mainly use AI for?": "ai_main_use",
+    "How confident are you in interpreting AI-generated results?": "ai_confidence",
+    "Have you integrated AI tools into your study or work routine?": "ai_integration",
+    "How likely are you to recommend AI tools to others?": "ai_recommend",
+    "Do you believe AI can improve productivity?": "ai_productivity_belief",
+    "Are you concerned about AI replacing jobs?": "job_replacement_concern",
+    "How comfortable are you using AI responsibly and ethically?": "ai_ethics_comfort",
+    "Do you trust AI-generated recommendations or answers?": "ai_trust",
+    "Would you like to learn more about AI in the future?": "learn_ai_future",
+    "How ready do you feel to adopt AI tools in your professional or academic life?": "ai_adoption_readiness"
+})
+data['gender'] = data['gender'].replace({"Other": None})
+data['gender'] = data['gender'].fillna(data['gender'].mode()[0])
+data['education'] = data['education'].replace({"Professional / Working": "Postgraduate"})
+data['tech_usage'] = data['tech_usage'].replace({"Rarely": "Sometimes"})
+data['ai_understanding'] = data['ai_understanding'].replace({1:"Low",2:"Low",3:"Low",4:"High",5:"High"})
+data['ai_tools_most_used'] = data['ai_tools_most_used'].str.lower().str.strip()
+data['ai_tools_most_used'] = data['ai_tools_most_used'].apply(
+    lambda x:
+        "ChatGPT" if any(word in x for word in ["chatgpt", "gpt", "copilot"])
+        else "Gemini" if any(word in x for word in ["gemini", "bard"])
+        else "Others"
+)
+data['ai_usage_freq'] = data['ai_usage_freq'].replace({"Never": "Rarely"})
+data['ai_confidence'] = data['ai_confidence'].replace({1:"Low",2:"Low",3:"Low",4:"High",5:"High"})
+data['ai_recommend'] = data['ai_recommend'].replace({1:"Low",2:"Low",3:"Low",4:"High",5:"High"})
+data['ai_ethics_comfort'] = data['ai_ethics_comfort'].replace({1:"Low",2:"Low",3:"Low",4:"High",5:"High"})
+data['ai_trust'] = data['ai_trust'].replace({"Depends": "Yes"})
+data.drop(['timestamp','field','name','ai_main_use'], axis=1, inplace=True)
+data['age'] = pd.to_numeric(data['age'], errors='coerce')
+data['age'] = data['age'].fillna(data['age'].mean())
+data['ai_adoption_readiness'] = data['ai_adoption_readiness'].replace({
+    "Low Readiness": 0,
+    "Medium Readiness": 0,
+    "High Readiness": 1
+})
+l1 = ["gender","education","ai_confidence","ai_ethics_comfort","ai_recommend",
+      "ai_understanding","tech_usage","heard_ai","used_ai_tools",
+      "ai_tools_most_used","ai_usage_freq","ai_integration",
+      "ai_productivity_belief","job_replacement_concern","ai_trust","learn_ai_future"]
+data_encoded = pd.get_dummies(data, columns=l1, drop_first=True)
 
-# Split into training and test sets
+
+# --- EDA & VISUALIZATION (DIVERSE PLOTS AND STYLES) ---
+print("\n====================== EDA & VISUALIZATION (Diverse Plots) ======================\n")
+
+# 1. Age Distribution (Kernel Density Estimate Plot)
+plt.figure(figsize=(9, 6))
+sns.kdeplot(data['age'], fill=True, color='teal', linewidth=3)
+plt.title("Age Distribution (Kernel Density Estimate)", fontsize=18, fontweight='bold')
+plt.xlabel("Age", fontsize=14)
+plt.ylabel("Density", fontsize=14)
+plt.show()
+
+# 2. Gender Count (Pie Chart)
+gender_counts = data['gender'].value_counts()
+plt.figure(figsize=(7, 7))
+plt.pie(gender_counts, labels=gender_counts.index, autopct='%1.1f%%', startangle=90, 
+        colors=sns.color_palette('Pastel1'), 
+        wedgeprops={'edgecolor': 'black', 'linewidth': 1, 'antialiased': True})
+plt.title("Gender Distribution", fontsize=16, fontweight='bold')
+plt.show()
+
+# 3. Education Level (Horizontal Bar Chart)
+plt.figure(figsize=(10, 6))
+sns.countplot(data=data, y='education', order=data['education'].value_counts().index, 
+              palette=sns.color_palette("rocket", len(data['education'].unique())))
+plt.title("Education Level Distribution", fontsize=16, fontweight='bold')
+plt.xlabel("Count", fontsize=14)
+plt.ylabel("Education Level", fontsize=14)
+plt.show()
+
+# 4. Daily Tech Usage (Point Plot)
+tech_order = ['Very Often', 'Sometimes', 'Rarely']
+tech_data = data['tech_usage'].value_counts().reindex(tech_order).fillna(0).reset_index()
+tech_data.columns = ['tech_usage', 'count']
+
+plt.figure(figsize=(8, 5))
+sns.pointplot(data=tech_data, x='tech_usage', y='count', color='darkorange', linestyles='--', markers='D')
+plt.title("Daily Tech Usage Frequency", fontsize=16, fontweight='bold')
+plt.xlabel("Usage Frequency", fontsize=14)
+plt.ylabel("Count", fontsize=14)
+plt.show()
+
+# 5. AI Adoption Readiness (Target Variable - Donut Plot)
+readiness_counts = data['ai_adoption_readiness'].value_counts()
+readiness_labels = ['Low/Medium Readiness (0)', 'High Readiness (1)']
+plt.figure(figsize=(8, 8))
+plt.pie(readiness_counts, labels=readiness_labels, autopct='%1.1f%%', startangle=90, 
+        colors=['#66c2a5', '#fc8d62'], 
+        wedgeprops=dict(width=0.3, edgecolor='white')) 
+plt.title("AI Adoption Readiness Distribution (Target)", fontsize=16, fontweight='bold')
+plt.show()
+
+# 6. AI Confidence vs AI Adoption Readiness (Grouped Bar Chart)
+plt.figure(figsize=(9, 6))
+sns.countplot(data=data, x='ai_confidence', hue='ai_adoption_readiness', 
+              order=['Low', 'High'], palette=['#4daf4a', '#e41a1c'])
+plt.title("AI Confidence vs Adoption Readiness", fontsize=16, fontweight='bold')
+plt.xlabel("AI Confidence Level", fontsize=14)
+plt.ylabel("Count", fontsize=14)
+plt.legend(title='Adoption Readiness', labels=['Low/Medium (0)', 'High (1)'])
+plt.show()
+
+# 7. Correlation Heatmap (Post-Encoding) 
+corr_matrix = data_encoded.corr()
+plt.figure(figsize=(15, 13))
+sns.heatmap(corr_matrix, cmap='vlag', annot=False, fmt=".2f", linewidths=.5, linecolor='lightgray', cbar_kws={'label': 'Correlation Coefficient'})
+plt.title("Feature Correlation Heatmap (Encoded Data)", fontsize=20, fontweight='bold')
+plt.tick_params(axis='both', which='major', labelsize=8)
+plt.show()
+
+
+print("\n====================== Model Training and Evaluation (Kept Same) ======================\n")
+
+# --- MODEL TRAINING AND EVALUATION (KEPT SAME) ---
+target_corr = data_encoded.corr()['ai_adoption_readiness'].sort_values(ascending=False)
+corr_threshold = 0.15
+selected_features = target_corr[abs(target_corr) >= corr_threshold].index.tolist()
+if 'ai_adoption_readiness' in selected_features:
+    selected_features.remove('ai_adoption_readiness')
+
+print("Selected features for model:")
+print(selected_features)
+
+X = data_encoded[selected_features]
+y = data_encoded["ai_adoption_readiness"]
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Scale numerical features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# -----------------------------------------------
-# 3. Model Training and Prediction
-# -----------------------------------------------
 
-# Initialize models
-models = {
-    "Linear Regression": LinearRegression(),
-    "Random Forest": RandomForestRegressor(n_estimators=200, random_state=42),
-    "XGBoost": XGBRegressor(n_estimators=200, learning_rate=0.1, random_state=42)
-}
+# ================= LOGISTIC REGRESSION =================
+log_model = LogisticRegression(max_iter=500)
+log_model.fit(X_train, y_train)
+y_pred_log = log_model.predict(X_test)
 
-# Train and evaluate each model
-for name, model in models.items():
-    model.fit(X_train, y_train)
-    preds = model.predict(X_test)
-    mae = mean_absolute_error(y_test, preds)
-    rmse = np.sqrt(mean_squared_error(y_test, preds))
-    r2 = r2_score(y_test, preds)
-    print(f"\nModel: {name}")
-    print(f"Mean Absolute Error: {mae:.2f}")
-    print(f"Root Mean Squared Error: {rmse:.2f}")
-    print(f"R² Score: {r2:.3f}")
+print("Logistic Regression Accuracy:", accuracy_score(y_test, y_pred_log))
+print(confusion_matrix(y_test, y_pred_log))
+print(classification_report(y_test, y_pred_log))
 
-# -----------------------------------------------
-# 4. Predict Future Trends
-# -----------------------------------------------
-# Example: Predict next month’s trend using Random Forest
-future_data = pd.DataFrame({
-    'Marketing_Spend': [50000],
-    'Economic_Index': [98.7],
-    'Season_Winter': [0],
-    'Season_Summer': [1]
-})
 
-# Preprocess and scale future data
-future_scaled = scaler.transform(future_data)
-rf_model = models['Random Forest']
-future_prediction = rf_model.predict(future_scaled)
+# ================= KNN (tuned) =================
+knn = KNeighborsClassifier(n_neighbors=15)
+knn.fit(X_train, y_train)
+y_pred_knn = knn.predict(X_test)
 
-print("\nPredicted Future Sales/Trend (Next Period):", round(future_prediction[0], 2))
+print("KNN Accuracy:", accuracy_score(y_test, y_pred_knn))
+print(confusion_matrix(y_test, y_pred_knn))
+print(classification_report(y_test, y_pred_knn))
 
-# -----------------------------------------------
-# 5. Feature Importance (for insights)
-# -----------------------------------------------
-feature_importance = pd.Series(rf_model.feature_importances_, index=X.columns)
-feature_importance = feature_importance.sort_values(ascending=False)
 
-print("\nTop Predictive Features:")
-print(feature_importance)
+# ================= DECISION TREE (tuned) =================
+dt = DecisionTreeClassifier(
+    random_state=42,
+    max_depth=5,
+    min_samples_split=5,
+    min_samples_leaf=2,
+    criterion='entropy'
+)
+dt.fit(X_train, y_train)
+y_pred_dt = dt.predict(X_test)
 
-# Optional: Plot feature importance
-import matplotlib.pyplot as plt
-plt.figure(figsize=(8,5))
-feature_importance.head(10).plot(kind='bar')
-plt.title("Top Feature Importances - Random Forest")
-plt.xlabel("Features")
-plt.ylabel("Importance Score")
-plt.tight_layout()
-plt.show()
+print("Decision Tree Accuracy:", accuracy_score(y_test, y_pred_dt))
+print(confusion_matrix(y_test, y_pred_dt))
+print(classification_report(y_test, y_pred_dt))
+
+
+# ================= RANDOM FOREST (tuned) =================
+rf = RandomForestClassifier(
+    n_estimators=300,
+    max_depth=15,
+    min_samples_split=5,
+    min_samples_leaf=2,
+    bootstrap=True,
+    random_state=42
+)
+rf.fit(X_train, y_train)
+y_pred_rf = rf.predict(X_test)
+
+print("Random Forest Accuracy:", accuracy_score(y_test, y_pred_rf))
+print(confusion_matrix(y_test, y_pred_rf))
+print(classification_report(y_test, y_pred_rf))
+
+
+# ================= SVM =================
+svm_model = SVC(kernel='rbf', random_state=42)
+svm_model.fit(X_train, y_train)
+y_pred_svm = svm_model.predict(X_test)
+
+print("SVM Accuracy:", accuracy_score(y_test, y_pred_svm))
+print(confusion_matrix(y_test, y_pred_svm))
+print(classification_report(y_test, y_pred_svm))
+
+
+# ================= BAGGING (tuned) =================
+bagging = BaggingClassifier(
+    estimator=DecisionTreeClassifier(
+        max_depth=5,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        criterion='entropy'
+    ),
+    n_estimators=150,
+    max_samples=0.8,
+    max_features=0.8,
+    bootstrap=True,
+    random_state=42
+)
+bagging.fit(X_train, y_train)
+y_pred_bag = bagging.predict(X_test)
+
+print("Bagging Accuracy:", accuracy_score(y_test, y_pred_bag))
+print(confusion_matrix(y_test, y_pred_bag))
+print(classification_report(y_test, y_pred_bag))
+
+
+# ================= ADABOOST (tuned) =================
+ada = AdaBoostClassifier(
+    estimator=DecisionTreeClassifier(max_depth=2),
+    n_estimators=200,
+    learning_rate=0.1,
+    random_state=42
+)
+ada.fit(X_train, y_train)
+y_pred_ada = ada.predict(X_test)
+
+print("AdaBoost Accuracy:", accuracy_score(y_test, y_pred_ada))
+print(confusion_matrix(y_test, y_pred_ada))
+print(classification_report(y_test, y_pred_ada))
+
+
+# ================= GRADIENT BOOSTING (tuned) =================
+gb = GradientBoostingClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=3,
+    min_samples_split=4,
+    min_samples_leaf=2,
+    random_state=42
+)
+gb.fit(X_train, y_train)
+y_pred_gb = gb.predict(X_test)
+
+print("Gradient Boosting Accuracy:", accuracy_score(y_test, y_pred_gb))
+print(confusion_matrix(y_test, y_pred_gb))
+print(classification_report(y_test, y_pred_gb))
+
+
+# ================= VOTING CLASSIFIER (with tuned RF + KNN) =================
+voting = VotingClassifier(
+    estimators=[
+        ("lr", LogisticRegression(max_iter=500)),
+        ("rf", RandomForestClassifier(
+            n_estimators=300,
+            max_depth=15,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            bootstrap=True,
+            random_state=42
+        )),
+        ("svm", SVC(kernel='rbf', probability=True, random_state=42)),
+        ("knn", KNeighborsClassifier(n_neighbors=15))
+    ],
+    voting='soft'
+)
+
+voting.fit(X_train, y_train)
+y_pred_vote = voting.predict(X_test)
+
+print("Voting Classifier Accuracy:", accuracy_score(y_test, y_pred_vote))
+print(confusion_matrix(y_test, y_pred_vote))
+print(classification_report(y_test, y_pred_vote))
+
+# ================= UNSUPERVISED LEARNING (AFTER REMOVING LABEL) =================
+print("\n================= UNSUPERVISED LEARNING (After Removing Label) =================\n")
+
+X_un = data_encoded.drop("ai_adoption_readiness", axis=1)    # remove label
+
+# Scale the data
+scaler_un = StandardScaler()
+X_un_scaled = scaler_un.fit_transform(X_un)
+
+# ================= K-MEANS =================
+kmeans = KMeans(n_clusters=3, random_state=42, n_init='auto')
+kmeans_labels = kmeans.fit_predict(X_un_scaled)
+
+print("K-Means Clustering Results:")
+print(pd.Series(kmeans_labels).value_counts())
+print("\n")
+
+
+# ================= AGGLOMERATIVE CLUSTERING =================
+agg = AgglomerativeClustering(n_clusters=3)
+agg_labels = agg.fit_predict(X_un_scaled)
+
+print("Agglomerative Clustering Results:")
+print(pd.Series(agg_labels).value_counts())
+print("\n")
+
+
+# ================= DBSCAN =================
+dbscan = DBSCAN(eps=1.5, min_samples=5)
+dbscan_labels = dbscan.fit_predict(X_un_scaled)
+
+print("DBSCAN Clustering Results:")
+print(pd.Series(dbscan_labels).value_counts())
+print("\n")
+
+print("Unsupervised Models Completed Successfully!")
