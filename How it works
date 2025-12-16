@@ -2,16 +2,16 @@ Training of the models and tasks:
 
 Loads and preprocesses data — including encoding categorical variables.
 
-Trains multiple models:
+Trains multiple models:1
 
-linear Regression (baseline)
+linear Regression (baseline):2
 
-Random Forest Regressor
+Random Forest Regressor:3
 
-XGBoost Regressor
+XGBoost Regressor:4
 
-Evaluates models using MAE, RMSE, and R² metrics.
+Evaluates models using MAE, RMSE, and R² metrics.:5
 
-Predicts future demand/trend based on new input conditions.
+Predicts future demand/trend based on new input conditions.:6
 
-Displays feature importance to explain which factors most influence the forecast.
+Displays feature importance to explain which factors most influence the forecast.:7
