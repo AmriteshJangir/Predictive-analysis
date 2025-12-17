@@ -112,3 +112,5 @@ This project provides a structured and analytical approach to predict AI adoptio
 
 1️⃣9️⃣ Author
 Predictive Analysis Project – AI Adoption Readiness
+
+Main development..................................................
