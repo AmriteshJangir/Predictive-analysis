@@ -5,7 +5,10 @@ Machine learning models such as ARIMA, Prophet, or LSTM networks analyze time-se
 These models detect seasonal patterns, trends, and irregular spikes in demand.
 This helps businesses predict future product demand with higher precision.
 
+#================+==========#
 Dynamic Inventory Management
+#================+==========#
+
 Predictive models can determine the optimal inventory levels across warehouses or retail outlets.
 They help prevent overstocking (leading to waste) and understocking (leading to lost sales).
 Automated systems can reorder products before they run out based on predicted consumption rates.
