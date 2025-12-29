@@ -1,3 +1,6 @@
+#===================================#
+Model evaluation and working process
+#===================================#
 Training of the models and tasks:
 
 Loads and preprocesses data — including encoding categorical variables.
