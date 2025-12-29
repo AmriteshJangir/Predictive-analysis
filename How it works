@@ -19,6 +19,9 @@ Displays feature importance to explain which factors most influence the forecast
 Integration Process............
 WORKING PROCESS...........
 Work process
-1.
-2.
-3.
+1.ideantification.
+2.data abstraction.
+3.data hiding + accessing.
+4.data manipulation + preprocessing.
+5.working on the data.
+6.data finding.
