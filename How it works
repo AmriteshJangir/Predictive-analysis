@@ -6,6 +6,7 @@ Training of the models and tasks:
 
 Loads and preprocesses data — including encoding categorical variables.
 
+#=======================#
 Trains multiple models:1
 
 linear Regression (baseline):2
