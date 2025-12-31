@@ -22,7 +22,6 @@ Feedback loops that compare predictions with actual outcomes
 Automated performance tuning to reduce forecasting error over time
 This approach enables adaptive intelligence, allowing supply chains to remain resilient in volatile environments.
 
-
 2. IoT Integration
 Internet of Things (IoT) integration enables real-time visibility across the supply chain by embedding sensors into physical assets.
 Core capabilities:
@@ -30,7 +29,6 @@ Real-time inventory level tracking across warehouses and retail outlets
 Monitoring equipment health (temperature, vibration, utilization)
 Early detection of failures or stock-out risks
 IoT data acts as a live data stream that feeds predictive models, ensuring decisions are based on current ground realities rather than historical snapshots.
-
 
 3. Big Data Platforms
 Big data platforms provide the infrastructure required to store, process, and analyze massive volumes of logistics data generated across multiple regions and systems.
