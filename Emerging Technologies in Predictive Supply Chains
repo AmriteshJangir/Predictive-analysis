@@ -47,7 +47,6 @@ Testing alternative sourcing and logistics strategies
 Evaluating the impact of policy or pricing changes
 Digital twins allow organizations to experiment safely in a virtual environment before implementing decisions in the real world.
 
-
 5. Blockchain-Based Transparency
 Blockchain technology ensures data integrity, traceability, and trust across decentralized supply chain networks.
 Benefits include:
@@ -55,7 +54,6 @@ Immutable records of transactions and movements
 End-to-end traceability from raw materials to end customers
 Reduced fraud and enhanced compliance
 This creates a single source of truth, particularly valuable in multi-stakeholder and cross-border supply chains.
-
 
 6. Data-Driven Systems (Real-Time Data & Model Training)
 Data-driven systems rely on continuous ingestion of real-time data to train and update machine learning models.
@@ -65,7 +63,6 @@ Automated feature extraction and labeling
 Incremental or online learning techniques
 This ensures that models stay accurate, relevant, and context-aware as conditions change.
 
-
 7. Data Model Execution, Frameworks & Filtering
 Once trained, models are deployed within robust execution frameworks that support real-time inference.
 Critical elements:
@@ -73,7 +70,6 @@ Model serving infrastructure (low-latency APIs)
 Rule-based and ML-based filtering to remove noise and anomalies
 Confidence thresholds and fallback logic
 This guarantees reliable, explainable, and actionable outputs for operational decision-making.
-
 
 8. Data-Driven Modeling with Real-Time Frameworks
 Data-driven modeling combines AI algorithms with real-time processing frameworks to enable continuous decision intelligence.
